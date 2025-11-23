@@ -50,7 +50,7 @@ The workflow performs the following activities:
 
 ## 📂 Workflow Screenshot
 
-> ![Workflow Screenshot](resources\n8n_proj.jpg)
+> ![Workflow Screenshot](resources/n8n_proj.jpg)
 
 ---
 
