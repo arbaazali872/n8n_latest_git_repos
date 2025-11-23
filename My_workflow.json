@@ -1,0 +1,867 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "box",
+              "cssSelector": "div.Box",
+              "returnValue": "html"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c04e7541-554e-4934-b73a-c7974dd636de",
+      "name": "Extract Box",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        464,
+        -80
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "url": "https://github.com/trending",
+        "options": {}
+      },
+      "id": "52748fab-633b-4791-a406-24952e8aff1a",
+      "name": "Request to Github Trend",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        240,
+        -80
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "repositories",
+        "options": {}
+      },
+      "id": "55326ff3-614f-492b-b68a-b987b22a590e",
+      "name": "Turn to a list",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        912,
+        -80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a0e76646-60d7-44a6-af77-33f27fb465cb",
+              "name": "author",
+              "type": "string",
+              "value": "={{ $json.repository.split('/')[0].trim() }}"
+            },
+            {
+              "id": "a2bd790a-784e-4d72-9a4e-92be22edea8f",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.repository.split('/')[1].trim() }}"
+            },
+            {
+              "id": "22f1518a-7081-4417-ab9d-88f26a7b5cfe",
+              "name": "repository",
+              "type": "string",
+              "value": "={{ $json.repository }}"
+            },
+            {
+              "id": "baff9a9f-020a-4968-bb80-a4a91a94144a",
+              "name": "url",
+              "type": "string",
+              "value": "=https://github.com/{{ $json.repository.replaceAll(' ','') }}"
+            },
+            {
+              "id": "f5c48a02-b55d-4167-a823-53ac1d851ee5",
+              "name": "created_at",
+              "type": "string",
+              "value": "={{$now}}"
+            },
+            {
+              "id": "27a44ce9-4b5b-44b2-94d9-eb5b2ae81dcd",
+              "name": "description",
+              "type": "string",
+              "value": "={{ $json.description }}"
+            }
+          ]
+        },
+        "includeOtherFields": "=",
+        "options": {}
+      },
+      "id": "51d025a4-80b8-47ef-b370-18cd94aec0b7",
+      "name": "Set Result Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1360,
+        -80
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "repositories",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "repository",
+              "cssSelector": "a.Link"
+            },
+            {
+              "key": "language",
+              "cssSelector": "span.d-inline-block"
+            },
+            {
+              "key": "description",
+              "cssSelector": "p"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d02d6d30-7ebe-490b-a967-0b156c97f9de",
+      "name": "Extract repository data",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        1136,
+        -80
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "box",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "repositories",
+              "cssSelector": "article.Box-row",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "id": "118cfec3-ab1c-4c2d-a222-86c6dbae9bb7",
+      "name": "Extract all repositories",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        688,
+        -80
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "afc86fc5-43f5-4aca-8caf-9f3d937a52b2",
+              "leftValue": "={{ $json.description }}",
+              "rightValue": "(LLM|GPT|ChatGPT|Transformer|LangChain|RAG|MLOps|MLflow|AI Security|Cybersecurity)",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        -80
+      ],
+      "id": "2f81dc6e-068f-400c-8c5f-e54779fe482e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.author }}/{{ $json.title }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1808,
+        -16
+      ],
+      "id": "82a55691-324f-4aa2-ad06-9b3066db9e4d",
+      "name": "HTTP Request",
+      "credentials": {
+        "githubApi": {  // removed — add your own credentials in n8n after import
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2032,
+        -80
+      ],
+      "id": "8ed0e9f5-989b-4709-a86c-5bb6bd6c8833",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "80c5b642-846d-43b4-af66-77b39e7ce4a4",
+              "name": "author",
+              "value": "={{ $json.author }}",
+              "type": "string"
+            },
+            {
+              "id": "307adc52-d0f3-4d6c-b9e1-d4963367c314",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "5f99474b-408b-4742-a18e-170da23c7f12",
+              "name": "repository",
+              "value": "={{ $json.repository }}",
+              "type": "string"
+            },
+            {
+              "id": "8015dae3-0d8f-467b-b728-560f3b32361b",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "611af3b9-8a32-40bc-8a3c-a4ac1f0cd3e6",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "a9187d71-a031-4b69-85dd-56316ffe299a",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "7e428e6a-4d1c-4154-94f8-02e28554e776",
+              "name": "stargazers_count",
+              "value": "={{ $json.stargazers_count }}",
+              "type": "number"
+            },
+            {
+              "id": "6a0e6b1a-e411-44c5-b055-07bb424b1ee9",
+              "name": "created_at",
+              "value": "={{ $json.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2256,
+        -80
+      ],
+      "id": "e5ad3cf9-0671-46fd-84d8-ba99469f2516",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        -80
+      ],
+      "id": "dd8ecb4e-a06e-4885-a8c7-7aea669b6786",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "trending_repos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stars": "={{ $json.stargazers_count }}",
+            "author": "={{ $json.author }}",
+            "title": "={{ $json.title }}",
+            "repository": "={{ $json.repository }}",
+            "url": "={{ $json.url }}",
+            "description": "={{ $json.description }}",
+            "created_at": "={{ $json.created_at }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "repository",
+              "displayName": "repository",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "inserted_at",
+              "displayName": "inserted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stars",
+              "displayName": "stars",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2480,
+        -80
+      ],
+      "id": "82a690b6-0b72-48cc-bbad-06bfe12a48b7",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {  // removed — add your own credentials in n8n after import
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        224
+      ],
+      "id": "39d2201b-a6ed-4839-8c68-dfcf87d42e0f",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "sendTo": "",
+        "subject": "Hello Word",
+        "message": "={{\n  \"Hello 👋,\\n\\nHere are the Top AI/LLM Repos this week:\\n\\n\" +\n  $items().slice(0,5).map((item, i) => \n    (i+1) + \". ⭐ \" + item.json.title + \" (\" + item.json.stars + \" stars)\\n\" +\n    \"   👨 Author: \" + item.json.author + \"\\n\" +\n    \"   📂 Repo: \" + item.json.repository + \"\\n\" +\n    \"   🔗 \" + item.json.url + \"\\n\" +\n    \"   📝 \" + (item.json.description || \"No description available\") + \"\\n\"\n  ).join(\"\\n\") +\n  \"\\n\\nBest regards,\\nYour GitHub Trends Bot 🚀\"\n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        224
+      ],
+      "id": "13237270-4c1e-4779-bca4-f27e2a058bb8",
+      "name": "Send a message",
+      "webhookId": "",
+      "credentials": {  
+        // removed — add your own credentials in n8n after import
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT 5\nFROM trending_repos\nWHERE inserted_at::timestamptz >= NOW() - INTERVAL '7 days'\nORDER BY created_at DESC;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        224
+      ],
+      "id": "15b23fec-010c-4af1-a996-cede7e21ab7e",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {  // removed — add your own credentials in n8n after import
+
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Set Result Variables": [
+      {
+        "json": {
+          "author": "harry0703",
+          "title": "MoneyPrinterTurbo",
+          "repository": "harry0703 / MoneyPrinterTurbo",
+          "url": "https://github.com/harry0703/MoneyPrinterTurbo",
+          "created_at": "2025-10-01T11:42:36.985-04:00",
+          "description": "利用AI大模型，一键生成高清短视频 Generate short videos with one click using AI LLM."
+        }
+      },
+      {
+        "json": {
+          "author": "Done-0",
+          "title": "fuck-u-code",
+          "repository": "Done-0 / fuck-u-code",
+          "url": "https://github.com/Done-0/fuck-u-code",
+          "created_at": "2025-10-01T11:42:36.996-04:00",
+          "description": "Legacy-Mess Detector – assess the “legacy-mess level” of your code and output a\nbeautiful report | 屎山代码检测器，评估代码的“屎山等级”并输出美观的报告"
+        }
+      },
+      {
+        "json": {
+          "author": "anthropics",
+          "title": "claude-agent-sdk-python",
+          "repository": "anthropics / claude-agent-sdk-python",
+          "url": "https://github.com/anthropics/claude-agent-sdk-python",
+          "created_at": "2025-10-01T11:42:36.997-04:00",
+          "description": ""
+        }
+      },
+      {
+        "json": {
+          "author": "lobehub",
+          "title": "lobe-chat",
+          "repository": "lobehub / lobe-chat",
+          "url": "https://github.com/lobehub/lobe-chat",
+          "created_at": "2025-10-01T11:42:36.999-04:00",
+          "description": "🤯 Lobe Chat - an open-source, modern design AI chat framework. Supports\nmultiple AI providers (OpenAI / Claude 4 / Gemini / DeepSeek / Ollama / Qwen),\nKnowledge Base (file upload / RAG ), one click install MCP Marketplace and\nArtifacts / Thinking. One-click FREE deployment of your private AI Agent\napplication."
+        }
+      },
+      {
+        "json": {
+          "author": "nextcloud",
+          "title": "server",
+          "repository": "nextcloud / server",
+          "url": "https://github.com/nextcloud/server",
+          "created_at": "2025-10-01T11:42:37.001-04:00",
+          "description": "☁️ Nextcloud server, a safe home for all your data"
+        }
+      },
+      {
+        "json": {
+          "author": "github",
+          "title": "awesome-copilot",
+          "repository": "github / awesome-copilot",
+          "url": "https://github.com/github/awesome-copilot",
+          "created_at": "2025-10-01T11:42:37.003-04:00",
+          "description": "Community-contributed instructions, prompts, and configurations to help you make\nthe most of GitHub Copilot."
+        }
+      },
+      {
+        "json": {
+          "author": "SDWebImage",
+          "title": "SDWebImage",
+          "repository": "SDWebImage / SDWebImage",
+          "url": "https://github.com/SDWebImage/SDWebImage",
+          "created_at": "2025-10-01T11:42:37.005-04:00",
+          "description": "Asynchronous image downloader with cache support as a UIImageView category"
+        }
+      },
+      {
+        "json": {
+          "author": "mlabonne",
+          "title": "llm-course",
+          "repository": "mlabonne / llm-course",
+          "url": "https://github.com/mlabonne/llm-course",
+          "created_at": "2025-10-01T11:42:37.006-04:00",
+          "description": "Course to get into Large Language Models (LLMs) with roadmaps and Colab\nnotebooks."
+        }
+      },
+      {
+        "json": {
+          "author": "aquasecurity",
+          "title": "trivy",
+          "repository": "aquasecurity / trivy",
+          "url": "https://github.com/aquasecurity/trivy",
+          "created_at": "2025-10-01T11:42:37.008-04:00",
+          "description": "Find vulnerabilities, misconfigurations, secrets, SBOM in containers,\nKubernetes, code repositories, clouds and more"
+        }
+      },
+      {
+        "json": {
+          "author": "lukas-blecher",
+          "title": "LaTeX-OCR",
+          "repository": "lukas-blecher / LaTeX-OCR",
+          "url": "https://github.com/lukas-blecher/LaTeX-OCR",
+          "created_at": "2025-10-01T11:42:37.012-04:00",
+          "description": "pix2tex: Using a ViT to convert images of equations into LaTeX code."
+        }
+      },
+      {
+        "json": {
+          "author": "PHPMailer",
+          "title": "PHPMailer",
+          "repository": "PHPMailer / PHPMailer",
+          "url": "https://github.com/PHPMailer/PHPMailer",
+          "created_at": "2025-10-01T11:42:37.014-04:00",
+          "description": "The classic email sending library for PHP"
+        }
+      },
+      {
+        "json": {
+          "author": "commaai",
+          "title": "openpilot",
+          "repository": "commaai / openpilot",
+          "url": "https://github.com/commaai/openpilot",
+          "created_at": "2025-10-01T11:42:37.016-04:00",
+          "description": "openpilot is an operating system for robotics. Currently, it upgrades the driver\nassistance system on 300+ supported cars."
+        }
+      },
+      {
+        "json": {
+          "author": "microsoft",
+          "title": "ai-agents-for-beginners",
+          "repository": "microsoft / ai-agents-for-beginners",
+          "url": "https://github.com/microsoft/ai-agents-for-beginners",
+          "created_at": "2025-10-01T11:42:37.018-04:00",
+          "description": "12 Lessons to Get Started Building AI Agents"
+        }
+      },
+      {
+        "json": {
+          "author": "YILING0013",
+          "title": "AI_NovelGenerator",
+          "repository": "YILING0013 / AI_NovelGenerator",
+          "url": "https://github.com/YILING0013/AI_NovelGenerator",
+          "created_at": "2025-10-01T11:42:37.019-04:00",
+          "description": "使用ai生成多章节的长篇小说，自动衔接上下文、伏笔"
+        }
+      },
+      {
+        "json": {
+          "author": "x1xhlol",
+          "title": "system-prompts-and-models-of-ai-tools",
+          "repository": "x1xhlol / system-prompts-and-models-of-ai-tools",
+          "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+          "created_at": "2025-10-01T11:42:37.021-04:00",
+          "description": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI,\nJunie, Kiro, Leap.new, Lovable, Manus Agent Tools, NotionAI, Orchids.app,\nPerplexity, Poke, Qoder, Replit, Same.dev, Trae, Traycer AI, VSCode Agent,\nWarp.dev, Windsurf, Xcode, Z.ai Code, dia & v0. (And other Open Sourced) System\nPrompts, Internal Tools & AI Models"
+        }
+      }
+    ],
+    "Execute a SQL query": [
+      {
+        "json": {
+          "id": 1,
+          "author": "harry0703",
+          "title": "MoneyPrinterTurbo",
+          "repository": "harry0703 / MoneyPrinterTurbo",
+          "url": "https://api.github.com/repos/harry0703/MoneyPrinterTurbo",
+          "created_at": "2024-03-11T02:57:34.000Z",
+          "description": "利用AI大模型，一键生成高清短视频 Generate short videos with one click using AI LLM.",
+          "inserted_at": "2025-10-02T13:14:03.475Z",
+          "stars": 45416
+        }
+      },
+      {
+        "json": {
+          "id": 3,
+          "author": "mlabonne",
+          "title": "llm-course",
+          "repository": "mlabonne / llm-course",
+          "url": "https://api.github.com/repos/mlabonne/llm-course",
+          "created_at": "2023-06-17T22:16:25.000Z",
+          "description": "Course to get into Large Language Models (LLMs) with roadmaps and Colab notebooks.",
+          "inserted_at": "2025-10-02T13:14:03.475Z",
+          "stars": 64133
+        }
+      },
+      {
+        "json": {
+          "id": 2,
+          "author": "lobehub",
+          "title": "lobe-chat",
+          "repository": "lobehub / lobe-chat",
+          "url": "https://api.github.com/repos/lobehub/lobe-chat",
+          "created_at": "2023-05-21T07:19:12.000Z",
+          "description": "🤯 Lobe Chat - an open-source, modern design AI chat framework. Supports multiple AI providers (OpenAI / Claude 4 / Gemini / DeepSeek / Ollama / Qwen), Knowledge Base (file upload / RAG ), one click install MCP Marketplace and Artifacts / Thinking. One-click FREE deployment of your private AI Agent application.",
+          "inserted_at": "2025-10-02T13:14:03.475Z",
+          "stars": 66385
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Extract Box": {
+      "main": [
+        [
+          {
+            "node": "Extract all repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn to a list": {
+      "main": [
+        [
+          {
+            "node": "Extract repository data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract repository data": {
+      "main": [
+        [
+          {
+            "node": "Set Result Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request to Github Trend": {
+      "main": [
+        [
+          {
+            "node": "Extract Box",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract all repositories": {
+      "main": [
+        [
+          {
+            "node": "Turn to a list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Result Variables": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Request to Github Trend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b47f8206-987d-4f8f-a414-2928d66204ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2173fd348f860f8ebf9d420a63226553f3ec3bc16fdd8b4b148bac9ed3774a38"
+  },
+  "id": "qNGRVRsiKBlWcsIV",
+  "tags": []
+}
