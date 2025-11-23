@@ -50,8 +50,7 @@ The workflow performs the following activities:
 
 ## 📂 Workflow Screenshot
 
-> Add your workflow canvas screenshot here  
-> `![Workflow Screenshot](C:\Users\arbaa\Desktop\projects\n8n_latest_git_repos\resources\n8n_proj.jpg)`
+> ![Workflow Screenshot](resources\n8n_proj.jpg)
 
 ---
 
@@ -106,15 +105,17 @@ Below is an example of 3–5 repository entries the workflow would generate:
 | lobehub   | lobe-chat         | lobehub/lobe-chat           | 66385 | [Link](https://github.com/lobehub/lobe-chat)           | Open-source AI chat framework with multiple providers |
 
 ## Security & Privacy
-    - Credentials are not included in this repository.
 
-    - Do not commit API keys, database passwords, or personal email addresses.
+- Credentials are not included in this repository.
 
-    - Placeholders are used in the workflow JSON. Add your own credentials after import.
+- Do not commit API keys, database passwords, or personal email addresses.
+
+- Placeholders are used in the workflow JSON. Add your own credentials after import.
 
 ## Customization
-    - Modify the If node filter to track other topics.
 
-    - Adjust the email template in the Gmail node.
+- Modify the If node filter to track other topics.
 
-    - Change database table or add additional fields from GitHub API as needed.
+- Adjust the email template in the Gmail node.
+
+- Change database table or add additional fields from GitHub API as needed.
